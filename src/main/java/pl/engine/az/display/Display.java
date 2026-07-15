@@ -38,5 +38,6 @@ public class Display extends Canvas {
 
     public void endFrame() {
         bufferStrategy.show();
+        Toolkit.getDefaultToolkit().sync();
     }
 }

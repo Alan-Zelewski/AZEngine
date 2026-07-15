@@ -1,6 +1,5 @@
 package pl.engine.az;
 
-import pl.engine.az.ecs.World;
 import pl.engine.az.display.Display;
 import pl.engine.az.input.InputManager;
 import pl.engine.az.system.EcsSystem;
@@ -11,10 +10,12 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.concurrent.locks.LockSupport;
 
 public class GameEngine implements Runnable {
     private volatile boolean running = false;
     private static final double TIME_STEP = 1.0 / 60.0;
+    private static final long TARGET_FRAME_NANOS = 1_000_000_000 / 60;
     private final Display display;
     private final InputManager inputManager;
     private final EnumMap<SystemPhase, List<EcsSystem>> systems = new EnumMap<>(SystemPhase.class);
@@ -51,13 +52,10 @@ public class GameEngine implements Runnable {
         double accumulator = 0.0;
 
         while (running) {
-
-            long currentTime = System.nanoTime();
-            double deltaTime = (currentTime - lastTime) / 1_000_000_000.0;
-            lastTime = currentTime;
-
+            long frameStart = System.nanoTime();
+            double deltaTime = (frameStart - lastTime) / 1_000_000_000.0;
+            lastTime = frameStart;
             deltaTime = Math.min(deltaTime, 0.25);
-
             accumulator += deltaTime;
 
             while (accumulator >= TIME_STEP) {
@@ -67,6 +65,8 @@ public class GameEngine implements Runnable {
 
             double alpha = accumulator / TIME_STEP;
             render(alpha);
+
+            limitFrameRate(frameStart);
         }
     }
 
@@ -99,5 +99,10 @@ public class GameEngine implements Runnable {
         display.endFrame();
     }
 
+    private void limitFrameRate(long frameStartNanos) {
+        long sleepNanos = TARGET_FRAME_NANOS - (System.nanoTime() - frameStartNanos);
+        if (sleepNanos > 0) {
+            LockSupport.parkNanos(sleepNanos);
+        }
+    }
 }
-
