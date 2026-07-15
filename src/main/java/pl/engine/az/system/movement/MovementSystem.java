@@ -1,11 +1,13 @@
-package pl.engine.az.system;
+package pl.engine.az.system.movement;
 
-import pl.engine.az.components.PositionComponent;
-import pl.engine.az.components.VelocityComponent;
-import pl.engine.az.core.ComponentMapper;
-import pl.engine.az.core.ComponentType;
-import pl.engine.az.core.Query;
-import pl.engine.az.core.World;
+import pl.engine.az.ecs.component.PositionComponent;
+import pl.engine.az.ecs.component.VelocityComponent;
+import pl.engine.az.ecs.ComponentMapper;
+import pl.engine.az.ecs.ComponentType;
+import pl.engine.az.ecs.Query;
+import pl.engine.az.ecs.World;
+import pl.engine.az.system.EcsSystem;
+import pl.engine.az.system.SystemPhase;
 
 public class MovementSystem extends EcsSystem {
 

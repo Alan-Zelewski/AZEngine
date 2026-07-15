@@ -1,4 +1,4 @@
-package pl.engine.az.core;
+package pl.engine.az.ecs;
 
 public final class ComponentType<T> {
 

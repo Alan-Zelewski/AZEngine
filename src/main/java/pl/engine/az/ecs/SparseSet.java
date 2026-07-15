@@ -1,11 +1,11 @@
-package pl.engine.az.core;
+package pl.engine.az.ecs;
 
 import java.util.Arrays;
 
 public class SparseSet<T> {
-    private int[] sparse; // Indeks: EntityID, Wartość: Indeks w dense
-    private int[] denseEntities; // Indeks: denseIndex, Wartość: EntityID
-    private Object[] denseComponents; // Indeks: denseIndex, Wartość: Komponent
+    private final int[] sparse; // Indeks: EntityID, Wartość: Indeks w dense
+    private final int[] denseEntities; // Indeks: denseIndex, Wartość: EntityID
+    private final Object[] denseComponents; // Indeks: denseIndex, Wartość: Komponent
     private int size = 0;
 
     public SparseSet(int maxEntities) {

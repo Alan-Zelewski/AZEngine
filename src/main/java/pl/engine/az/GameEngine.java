@@ -1,7 +1,7 @@
 package pl.engine.az;
 
-import pl.engine.az.core.World;
 import pl.engine.az.display.Display;
+import pl.engine.az.input.InputManager;
 import pl.engine.az.system.EcsSystem;
 import pl.engine.az.system.SystemPhase;
 import pl.engine.az.system.render.EcsRenderSystem;
@@ -10,17 +10,19 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.concurrent.locks.LockSupport;
 
 public class GameEngine implements Runnable {
     private volatile boolean running = false;
     private static final double TIME_STEP = 1.0 / 60.0;
-    private final World world;
+    private static final long TARGET_FRAME_NANOS = 1_000_000_000 / 60;
     private final Display display;
+    private final InputManager inputManager;
     private final EnumMap<SystemPhase, List<EcsSystem>> systems = new EnumMap<>(SystemPhase.class);
 
-    public GameEngine(World world, Display display) {
-        this.world = world;
+    public GameEngine(Display display, InputManager inputManager) {
         this.display = display;
+        this.inputManager = inputManager;
         for (SystemPhase phase : SystemPhase.values()) {
             systems.put(
                     phase,
@@ -50,13 +52,10 @@ public class GameEngine implements Runnable {
         double accumulator = 0.0;
 
         while (running) {
-
-            long currentTime = System.nanoTime();
-            double deltaTime = (currentTime - lastTime) / 1_000_000_000.0;
-            lastTime = currentTime;
-
+            long frameStart = System.nanoTime();
+            double deltaTime = (frameStart - lastTime) / 1_000_000_000.0;
+            lastTime = frameStart;
             deltaTime = Math.min(deltaTime, 0.25);
-
             accumulator += deltaTime;
 
             while (accumulator >= TIME_STEP) {
@@ -66,10 +65,13 @@ public class GameEngine implements Runnable {
 
             double alpha = accumulator / TIME_STEP;
             render(alpha);
+
+            limitFrameRate(frameStart);
         }
     }
 
     private void update(double deltaTime) {
+        inputManager.beginFrame();
         for (SystemPhase phase : SystemPhase.values()) {
             if (phase == SystemPhase.RENDER || phase == SystemPhase.RENDER_PREPARE) {
                 continue;
@@ -97,5 +99,10 @@ public class GameEngine implements Runnable {
         display.endFrame();
     }
 
+    private void limitFrameRate(long frameStartNanos) {
+        long sleepNanos = TARGET_FRAME_NANOS - (System.nanoTime() - frameStartNanos);
+        if (sleepNanos > 0) {
+            LockSupport.parkNanos(sleepNanos);
+        }
+    }
 }
-

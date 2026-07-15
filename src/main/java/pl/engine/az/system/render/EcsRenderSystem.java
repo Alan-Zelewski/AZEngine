@@ -1,6 +1,6 @@
 package pl.engine.az.system.render;
 
-import pl.engine.az.core.World;
+import pl.engine.az.ecs.World;
 import pl.engine.az.system.EcsSystem;
 import pl.engine.az.system.SystemPhase;
 
