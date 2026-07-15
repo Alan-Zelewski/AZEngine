@@ -1,4 +1,4 @@
-package pl.engine.az.core;
+package pl.engine.az.ecs;
 
 public class EntityUtils {
     private static final int INDEX_BITS = 20;

@@ -1,7 +1,8 @@
 package pl.engine.az;
 
-import pl.engine.az.core.World;
+import pl.engine.az.ecs.World;
 import pl.engine.az.display.Display;
+import pl.engine.az.input.InputManager;
 import pl.engine.az.system.EcsSystem;
 import pl.engine.az.system.SystemPhase;
 import pl.engine.az.system.render.EcsRenderSystem;
@@ -14,13 +15,13 @@ import java.util.List;
 public class GameEngine implements Runnable {
     private volatile boolean running = false;
     private static final double TIME_STEP = 1.0 / 60.0;
-    private final World world;
     private final Display display;
+    private final InputManager inputManager;
     private final EnumMap<SystemPhase, List<EcsSystem>> systems = new EnumMap<>(SystemPhase.class);
 
-    public GameEngine(World world, Display display) {
-        this.world = world;
+    public GameEngine(Display display, InputManager inputManager) {
         this.display = display;
+        this.inputManager = inputManager;
         for (SystemPhase phase : SystemPhase.values()) {
             systems.put(
                     phase,
@@ -70,6 +71,7 @@ public class GameEngine implements Runnable {
     }
 
     private void update(double deltaTime) {
+        inputManager.beginFrame();
         for (SystemPhase phase : SystemPhase.values()) {
             if (phase == SystemPhase.RENDER || phase == SystemPhase.RENDER_PREPARE) {
                 continue;

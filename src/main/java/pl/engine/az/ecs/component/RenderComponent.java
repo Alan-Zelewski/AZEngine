@@ -1,4 +1,4 @@
-package pl.engine.az.components;
+package pl.engine.az.ecs.component;
 
 import lombok.AllArgsConstructor;
 

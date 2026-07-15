@@ -1,6 +1,6 @@
 package pl.engine.az.system;
 
-import pl.engine.az.core.World;
+import pl.engine.az.ecs.World;
 
 public abstract class EcsSystem {
     protected final World world;

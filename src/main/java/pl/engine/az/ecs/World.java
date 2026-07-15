@@ -1,4 +1,4 @@
-package pl.engine.az.core;
+package pl.engine.az.ecs;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,11 +1,11 @@
 package pl.engine.az.system.render;
 
-import pl.engine.az.components.PositionComponent;
-import pl.engine.az.components.RenderComponent;
-import pl.engine.az.core.ComponentMapper;
-import pl.engine.az.core.ComponentType;
-import pl.engine.az.core.Query;
-import pl.engine.az.core.World;
+import pl.engine.az.ecs.component.PositionComponent;
+import pl.engine.az.ecs.component.RenderComponent;
+import pl.engine.az.ecs.ComponentMapper;
+import pl.engine.az.ecs.ComponentType;
+import pl.engine.az.ecs.Query;
+import pl.engine.az.ecs.World;
 
 import java.awt.*;
 
