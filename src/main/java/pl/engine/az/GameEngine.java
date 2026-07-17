@@ -1,15 +1,10 @@
 package pl.engine.az;
 
 import pl.engine.az.display.Display;
+import pl.engine.az.core.SystemScheduler;
 import pl.engine.az.input.InputManager;
-import pl.engine.az.system.EcsSystem;
-import pl.engine.az.system.SystemPhase;
-import pl.engine.az.system.render.EcsRenderSystem;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 public class GameEngine implements Runnable {
@@ -18,30 +13,18 @@ public class GameEngine implements Runnable {
     private static final long TARGET_FRAME_NANOS = 1_000_000_000 / 60;
     private final Display display;
     private final InputManager inputManager;
-    private final EnumMap<SystemPhase, List<EcsSystem>> systems = new EnumMap<>(SystemPhase.class);
+    private final SystemScheduler scheduler;
 
-    public GameEngine(Display display, InputManager inputManager) {
+    public GameEngine(Display display, InputManager inputManager, SystemScheduler scheduler) {
         this.display = display;
         this.inputManager = inputManager;
-        for (SystemPhase phase : SystemPhase.values()) {
-            systems.put(
-                    phase,
-                    new ArrayList<>()
-            );
-        }
+        this.scheduler = scheduler;
     }
-
-    public void addSystem(EcsSystem system) {
-        systems.get(system.phase())
-                .add(system);
-    }
-
 
     public void start() {
         if (running) {
             return;
         }
-
         running = true;
         new Thread(this, "Game Thread").start();
     }
@@ -72,26 +55,13 @@ public class GameEngine implements Runnable {
 
     private void update(double deltaTime) {
         inputManager.beginFrame();
-        for (SystemPhase phase : SystemPhase.values()) {
-            if (phase == SystemPhase.RENDER || phase == SystemPhase.RENDER_PREPARE) {
-                continue;
-            }
-            for (EcsSystem system : systems.get(phase)) {
-                system.update(deltaTime);
-            }
-        }
+        scheduler.update(deltaTime);
     }
 
     private void render(double alpha) {
         Graphics g = display.beginFrame();
         try {
-            for (SystemPhase phase : List.of(SystemPhase.RENDER_PREPARE, SystemPhase.RENDER)) {
-                for (EcsSystem system : systems.get(phase)) {
-                    if (system instanceof EcsRenderSystem renderSystem) {
-                        renderSystem.render(g, alpha);
-                    }
-                }
-            }
+            scheduler.render(g, alpha);
         } finally {
             g.dispose();
         }

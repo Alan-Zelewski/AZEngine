@@ -1,15 +1,13 @@
 package pl.engine.az.system.movement;
 
+import pl.engine.az.ecs.EntityCommandBuffer;
+import pl.engine.az.ecs.*;
 import pl.engine.az.ecs.component.PositionComponent;
 import pl.engine.az.ecs.component.VelocityComponent;
-import pl.engine.az.ecs.ComponentMapper;
-import pl.engine.az.ecs.ComponentType;
-import pl.engine.az.ecs.Query;
-import pl.engine.az.ecs.World;
-import pl.engine.az.system.EcsSystem;
-import pl.engine.az.system.SystemPhase;
+import pl.engine.az.system.phase.UpdatePhase;
+import pl.engine.az.system.UpdateSystem;
 
-public class MovementSystem extends EcsSystem {
+public class MovementSystem implements UpdateSystem {
 
     private final Query query;
     private final ComponentMapper<PositionComponent> positions;
@@ -20,7 +18,6 @@ public class MovementSystem extends EcsSystem {
             ComponentType<PositionComponent> positionType,
             ComponentType<VelocityComponent> velocityType
     ) {
-        super(world);
         this.positions =
                 new ComponentMapper<>(
                         positionType
@@ -35,12 +32,12 @@ public class MovementSystem extends EcsSystem {
     }
 
     @Override
-    public SystemPhase phase() {
-        return SystemPhase.UPDATE;
+    public UpdatePhase phase() {
+        return UpdatePhase.MOVEMENT;
     }
 
     @Override
-    public void update(double deltaTime) {
+    public void update(double deltaTime, EntityCommandBuffer commands) {
         for (int i = 0; i < query.size(); i++) {
             int entity =
                     query.entityAt(i);

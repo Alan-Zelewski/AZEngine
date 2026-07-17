@@ -1,16 +1,14 @@
 package pl.engine.az.system.input;
 
-import pl.engine.az.ecs.ComponentMapper;
-import pl.engine.az.ecs.ComponentType;
-import pl.engine.az.ecs.Query;
-import pl.engine.az.ecs.World;
+import pl.engine.az.ecs.EntityCommandBuffer;
+import pl.engine.az.ecs.*;
 import pl.engine.az.ecs.component.DesiredMovementComponent;
 import pl.engine.az.input.Action;
 import pl.engine.az.input.InputManager;
-import pl.engine.az.system.EcsSystem;
-import pl.engine.az.system.SystemPhase;
+import pl.engine.az.system.phase.UpdatePhase;
+import pl.engine.az.system.UpdateSystem;
 
-public class PlayerInputSystem extends EcsSystem {
+public class PlayerInputSystem implements UpdateSystem {
     private final InputManager inputManager;
     private final Query query;
     private final ComponentMapper<DesiredMovementComponent> movements;
@@ -20,7 +18,6 @@ public class PlayerInputSystem extends EcsSystem {
             ComponentType<DesiredMovementComponent> movementType,
             InputManager inputManager
     ) {
-        super(world);
         this.inputManager = inputManager;
         this.movements = new ComponentMapper<>(movementType);
         long mask = 1L << movementType.id();
@@ -28,12 +25,12 @@ public class PlayerInputSystem extends EcsSystem {
     }
 
     @Override
-    public SystemPhase phase() {
-        return SystemPhase.INPUT;
+    public UpdatePhase phase() {
+        return UpdatePhase.INPUT;
     }
 
     @Override
-    public void update(double deltaTime) {
+    public void update(double deltaTime, EntityCommandBuffer commands) {
         for (int i = 0; i < query.size(); i++) {
             int entity = query.entityAt(i);
             DesiredMovementComponent desired = movements.get(entity);

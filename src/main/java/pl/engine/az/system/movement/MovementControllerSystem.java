@@ -1,16 +1,14 @@
 package pl.engine.az.system.movement;
 
-import pl.engine.az.ecs.ComponentMapper;
-import pl.engine.az.ecs.ComponentType;
-import pl.engine.az.ecs.Query;
-import pl.engine.az.ecs.World;
+import pl.engine.az.ecs.EntityCommandBuffer;
+import pl.engine.az.ecs.*;
 import pl.engine.az.ecs.component.DesiredMovementComponent;
 import pl.engine.az.ecs.component.MovementStateComponent;
 import pl.engine.az.ecs.component.VelocityComponent;
-import pl.engine.az.system.EcsSystem;
-import pl.engine.az.system.SystemPhase;
+import pl.engine.az.system.phase.UpdatePhase;
+import pl.engine.az.system.UpdateSystem;
 
-public class MovementControllerSystem extends EcsSystem {
+public class MovementControllerSystem implements UpdateSystem {
 
     private final Query query;
     private final ComponentMapper<DesiredMovementComponent> desiredMapper;
@@ -23,7 +21,6 @@ public class MovementControllerSystem extends EcsSystem {
             ComponentType<VelocityComponent> velocityType,
             ComponentType<MovementStateComponent> stateType
     ) {
-        super(world);
         desiredMapper = new ComponentMapper<>(desiredType);
         velocityMapper = new ComponentMapper<>(velocityType);
         stateMapper = new ComponentMapper<>(stateType);
@@ -32,18 +29,18 @@ public class MovementControllerSystem extends EcsSystem {
     }
 
     @Override
-    public SystemPhase phase() {
-        return SystemPhase.UPDATE;
+    public UpdatePhase phase() {
+        return UpdatePhase.MOVEMENT;
     }
 
     @Override
-    public void update(double deltaTime) {
-        for (int i=0; i<query.size();i++) {
+    public void update(double deltaTime, EntityCommandBuffer commands) {
+        for (int i = 0; i < query.size(); i++) {
             int entity = query.entityAt(i);
             DesiredMovementComponent desired = desiredMapper.get(entity);
             VelocityComponent velocity = velocityMapper.get(entity);
             MovementStateComponent state = stateMapper.get(entity);
-            if(!state.movementEnabled) {
+            if (!state.movementEnabled) {
                 velocity.x = approach(velocity.x, 0, state.deceleration * deltaTime);
                 velocity.y = approach(velocity.y, 0, state.deceleration * deltaTime);
                 continue;
@@ -52,8 +49,12 @@ public class MovementControllerSystem extends EcsSystem {
             boolean changingDirectionX = Math.signum(velocity.x) != Math.signum(targetX);
             double targetY = desired.y * state.speed;
             boolean changingDirectionY = Math.signum(velocity.y) != Math.signum(targetY);
-            double changeRateX = changingDirectionX ? state.deceleration : desired.x != 0 ? state.acceleration : state.deceleration;
-            double changeRateY = changingDirectionY ? state.deceleration : desired.y != 0 ? state.acceleration : state.deceleration;
+            double changeRateX = changingDirectionX
+                    ? state.deceleration
+                    : desired.x != 0 ? state.acceleration : state.deceleration;
+            double changeRateY = changingDirectionY
+                    ? state.deceleration
+                    : desired.y != 0 ? state.acceleration : state.deceleration;
             double maxChangeX = changeRateX * deltaTime;
             double maxChangeY = changeRateY * deltaTime;
             velocity.x = approach(velocity.x, targetX, maxChangeX);

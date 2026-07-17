@@ -6,10 +6,12 @@ import pl.engine.az.ecs.ComponentMapper;
 import pl.engine.az.ecs.ComponentType;
 import pl.engine.az.ecs.Query;
 import pl.engine.az.ecs.World;
+import pl.engine.az.system.RenderSystem;
+import pl.engine.az.system.phase.RenderPhase;
 
 import java.awt.*;
 
-public class SquareRenderSystem extends EcsRenderSystem {
+public class SquareRenderSystem implements RenderSystem {
     private final Query query;
     private final ComponentMapper<PositionComponent> positions;
     private final ComponentMapper<RenderComponent> renders;
@@ -19,14 +21,16 @@ public class SquareRenderSystem extends EcsRenderSystem {
             ComponentType<PositionComponent> positionType,
             ComponentType<RenderComponent> renderType
     ) {
-
-        super(world);
         positions = new ComponentMapper<>(positionType);
         renders = new ComponentMapper<>(renderType);
         long mask = (1L << positionType.id()) | (1L << renderType.id());
         query = world.createQuery(mask);
     }
 
+    @Override
+    public RenderPhase phase() {
+        return RenderPhase.WORLD;
+    }
 
     @Override
     public void render(Graphics g, double alpha) {
