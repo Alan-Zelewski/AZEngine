@@ -10,8 +10,10 @@ repositories {
 }
 
 dependencies {
-    // Source: https://mvnrepository.com/artifact/org.dyn4j/dyn4j
-    runtimeOnly("org.dyn4j:dyn4j:5.0.2")
+    // Source: https://mvnrepository.com/artifact/io.github.classgraph/classgraph
+    implementation("io.github.classgraph:classgraph:4.8.184")
+// Source: https://mvnrepository.com/artifact/org.dyn4j/dyn4j
+    implementation("org.dyn4j:dyn4j:5.0.2")
 // Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind
     implementation("tools.jackson.core:jackson-databind:3.2.0")
     compileOnly("org.projectlombok:lombok:1.18.46")

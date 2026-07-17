@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import java.awt.*;
 
 @AllArgsConstructor
-public class RenderComponent {
+public class RenderComponent implements Component{
     public int width;
     public int height;
     public Color color;

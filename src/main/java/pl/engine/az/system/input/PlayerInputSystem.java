@@ -1,26 +1,24 @@
 package pl.engine.az.system.input;
 
+import pl.engine.az.ecs.ComponentMapper;
 import pl.engine.az.ecs.EntityCommandBuffer;
-import pl.engine.az.ecs.*;
+import pl.engine.az.ecs.Query;
+import pl.engine.az.ecs.World;
 import pl.engine.az.ecs.component.DesiredMovementComponent;
 import pl.engine.az.input.Action;
 import pl.engine.az.input.InputManager;
-import pl.engine.az.system.phase.UpdatePhase;
 import pl.engine.az.system.UpdateSystem;
+import pl.engine.az.system.phase.UpdatePhase;
 
 public class PlayerInputSystem implements UpdateSystem {
     private final InputManager inputManager;
     private final Query query;
     private final ComponentMapper<DesiredMovementComponent> movements;
 
-    public PlayerInputSystem(
-            World world,
-            ComponentType<DesiredMovementComponent> movementType,
-            InputManager inputManager
-    ) {
+    public PlayerInputSystem(World world, InputManager inputManager) {
         this.inputManager = inputManager;
-        this.movements = new ComponentMapper<>(movementType);
-        long mask = 1L << movementType.id();
+        this.movements = world.getMapper(DesiredMovementComponent.class);
+        long mask = world.maskOf(DesiredMovementComponent.class);
         this.query = world.createQuery(mask);
     }
 

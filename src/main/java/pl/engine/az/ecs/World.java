@@ -1,5 +1,7 @@
 package pl.engine.az.ecs;
 
+import pl.engine.az.ecs.component.Component;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +16,8 @@ public class World {
     private int freeCount = 0;
     private final long[] signatures;
     private int nextComponentId = 0;
-    private final Map<Class<?>, ComponentType<?>>
-            componentRegistry =
-            new HashMap<>();
+    private final Map<Class<? extends Component>, ComponentType<?>> componentRegistry = new HashMap<>();
+    private final Map<Class<? extends Component>, ComponentMapper<?>> mappers = new HashMap<>();
     private final ComponentType<?>[] componentTypes;
     private final List<Query> queries = new ArrayList<>();
 
@@ -33,13 +34,13 @@ public class World {
     // COMPONENT REGISTRATION
     // -----------------------
 
-    public <T> ComponentType<T> registerComponent(Class<T> clazz) {
-        if (componentRegistry.containsKey(clazz)) {
+    public <T extends Component> ComponentType<T> registerComponent(Class<T> componentClass) {
+        if (componentRegistry.containsKey(componentClass)) {
             throw new IllegalStateException("Component already registered.");
         }
         int id = nextComponentId++;
         ComponentType<T> type = new ComponentType<>(id, maxEntities);
-        componentRegistry.put(clazz, type);
+        componentRegistry.put(componentClass, type);
         componentTypes[id] = type;
         return type;
     }
@@ -51,6 +52,31 @@ public class World {
                 .put(index, component);
         signatures[index] |= 1L << type.id();
         updateQueries(entityId, signatures[index]);
+    }
+
+    // -----------------------
+    // COMPONENT SEARCH
+    // -----------------------
+
+    public <T extends Component> ComponentType<T> getComponentType(Class<T> componentClass) {
+        @SuppressWarnings("unchecked")
+        ComponentType<T> type = (ComponentType<T>) componentRegistry.get(componentClass);
+        if (type == null) {
+            throw new IllegalStateException(
+                    "Komponent " + componentClass.getSimpleName() + " nie został zarejestrowany. " +
+                            "Sprawdź, czy implementuje Component i znajduje się w skanowanym pakiecie."
+            );
+        }
+        return type;
+    }
+
+    public <T extends Component> ComponentMapper<T> getMapper(Class<T> componentClass) {
+        @SuppressWarnings("unchecked")
+        ComponentMapper<T> mapper = (ComponentMapper<T>) mappers.computeIfAbsent(
+                componentClass,
+                c -> new ComponentMapper<>(getComponentType(componentClass))
+        );
+        return mapper;
     }
 
     // -----------------------
@@ -145,5 +171,18 @@ public class World {
         for (Query query : queries) {
             query.evaluate(entityId, signature);
         }
+    }
+
+    // -----------------------
+    // QUERY MASK
+    // -----------------------
+
+    @SafeVarargs
+    public final long maskOf(Class<? extends Component>... classes) {
+        long mask = 0;
+        for (Class<? extends Component> c : classes) {
+            mask |= 1L << getComponentType(c).id();
+        }
+        return mask;
     }
 }

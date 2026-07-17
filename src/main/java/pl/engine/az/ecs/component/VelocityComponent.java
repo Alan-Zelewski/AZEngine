@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class VelocityComponent {
+public class VelocityComponent implements Component{
     
     public double x;
     public double y;

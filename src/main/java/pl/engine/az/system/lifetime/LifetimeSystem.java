@@ -10,9 +10,9 @@ public class LifetimeSystem implements UpdateSystem {
     private final Query query;
     private final ComponentMapper<LifetimeComponent> lifetimes;
 
-    public LifetimeSystem(World world, ComponentType<LifetimeComponent> lifetimeType) {
-        this.lifetimes = new ComponentMapper<>(lifetimeType);
-        this.query = world.createQuery(1L << lifetimeType.id());
+    public LifetimeSystem(World world) {
+        this.lifetimes = world.getMapper(LifetimeComponent.class);
+        this.query = world.createQuery(world.maskOf(LifetimeComponent.class));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package pl.engine.az.ecs.component;
 
-public class PositionComponent {
+public class PositionComponent implements Component {
 
     public double x;
     public double y;
