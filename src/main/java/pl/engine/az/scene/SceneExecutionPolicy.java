@@ -1,11 +1,12 @@
 package pl.engine.az.scene;
 
-import lombok.AllArgsConstructor;
+import pl.engine.az.system.phase.PhasePolicy;
+import pl.engine.az.system.phase.SystemPhase;
 
-@AllArgsConstructor
-public class SceneExecutionPolicy {
-    public final long updateMask;
-    public final boolean stopUpdate;
-    public final long renderMask;
-    public final boolean stopRender;
+import java.util.Map;
+
+public record SceneExecutionPolicy(Map<SystemPhase, PhasePolicy> phases) {
+    public SceneExecutionPolicy(Map<SystemPhase, PhasePolicy> phases) {
+        this.phases = Map.copyOf(phases);
+    }
 }

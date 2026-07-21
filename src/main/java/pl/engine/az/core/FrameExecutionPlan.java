@@ -1,15 +1,14 @@
 package pl.engine.az.core;
 
-import lombok.AllArgsConstructor;
 import pl.engine.az.system.phase.SystemPhase;
 
 import java.util.Map;
 
-@AllArgsConstructor
-public class FrameExecutionPlan {
-    private final Map<SystemPhase, Long> activeTags;
+public record FrameExecutionPlan(
+        Map<SystemPhase, Long> masks
+) {
 
-    public long getActiveTags(SystemPhase phase) {
-        return activeTags.getOrDefault(phase, 0L);
+    public long getMask(SystemPhase phase) {
+        return masks.getOrDefault(phase, 0L);
     }
 }

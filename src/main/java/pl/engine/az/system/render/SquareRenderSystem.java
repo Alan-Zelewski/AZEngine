@@ -2,6 +2,7 @@ package pl.engine.az.system.render;
 
 import pl.engine.az.core.SystemDescriptor;
 import pl.engine.az.core.SystemScheduler;
+import pl.engine.az.core.SystemTag;
 import pl.engine.az.core.SystemTags;
 import pl.engine.az.ecs.ComponentMapper;
 import pl.engine.az.ecs.Query;
@@ -12,12 +13,13 @@ import pl.engine.az.system.RenderSystem;
 import pl.engine.az.system.phase.RenderPhase;
 
 import java.awt.*;
+import java.util.EnumSet;
 
 public class SquareRenderSystem implements RenderSystem {
     public static final SystemDescriptor descriptor = new SystemDescriptor(
             "SquareRenderer",
             RenderPhase.WORLD,
-            SystemTags.WORLD
+            EnumSet.of(SystemTag.RENDER)
     );
     private final Query query;
     private final ComponentMapper<PositionComponent> positions;

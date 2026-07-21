@@ -2,40 +2,39 @@ package pl.engine.az.core;
 
 import pl.engine.az.scene.Scene;
 import pl.engine.az.scene.SceneExecutionPolicy;
-import pl.engine.az.system.phase.RenderPhase;
-import pl.engine.az.system.phase.SystemPhase;
-import pl.engine.az.system.phase.UpdatePhase;
+import pl.engine.az.system.phase.*;
 
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class ExecutionPlanner {
+public final class ExecutionPlanner {
+    private final List<SystemPhase> phases;
+
+    public ExecutionPlanner() {
+        List<SystemPhase> phases = new ArrayList<>();
+        phases.addAll(List.of(UpdatePhase.values()));
+        phases.addAll(List.of(RenderPhase.values()));
+        this.phases = phases;
+    }
 
     public FrameExecutionPlan buildPlan(Deque<Scene> sceneStack) {
-        Map<SystemPhase, Long> map = new HashMap<>();
+        Map<SystemPhase, Long> result = new HashMap<>();
+        for (SystemPhase phase : phases) {
+            long activeTags = 0L;
+            for (Scene scene: sceneStack) {
+                SceneExecutionPolicy policy = scene.getExecutionPolicy();
+                PhasePolicy phasePolicy = policy.phases().get(phase);
+                if (phasePolicy == null) {
+                    continue;
+                }
 
-        for (UpdatePhase phase : UpdatePhase.values()) {
-            long mask = 0L;
-            for (Scene scene : sceneStack) {
-                SceneExecutionPolicy pol = scene.getExecutionPolicy();
-                mask |= pol.updateMask;
-                if (pol.stopUpdate)
-                    break;
-            }
-            map.put(phase, mask);
-        }
+                activeTags |= phasePolicy.tags();
 
-        for (RenderPhase phase : RenderPhase.values()) {
-            long mask = 0L;
-            for (Scene scene : sceneStack) {
-                SceneExecutionPolicy pol = scene.getExecutionPolicy();
-                mask |= pol.renderMask;
-                if (pol.stopRender)
+                if (phasePolicy.propagation() == ExecutionPropagation.STOP) {
                     break;
+                }
             }
-            map.put(phase, mask);
+            result.put(phase, activeTags);
         }
-        return new FrameExecutionPlan(map);
+        return new FrameExecutionPlan(result);
     }
 }

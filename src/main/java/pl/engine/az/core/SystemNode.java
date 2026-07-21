@@ -1,13 +1,29 @@
 package pl.engine.az.core;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import pl.engine.az.system.EngineSystem;
-import pl.engine.az.system.UpdateSystem;
 
-@AllArgsConstructor
-@Getter
-public class SystemNode<T extends EngineSystem> {
+public abstract class SystemNode<T extends EngineSystem> {
+
     private final T system;
     private final SystemDescriptor descriptor;
+    private final long tagMask;
+
+    public SystemNode(T system) {
+
+        this.system = system;
+        this.descriptor = system.descriptor();
+        this.tagMask = SystemTag.toMask(descriptor.tags());
+    }
+
+    public final boolean canRun(long activeMask) {
+        return (tagMask & activeMask) != 0;
+    }
+
+    public final EngineSystem getSystem() {
+        return system;
+    }
+
+    public final SystemDescriptor getDescriptor() {
+        return descriptor;
+    }
 }

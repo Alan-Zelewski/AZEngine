@@ -14,8 +14,8 @@ import java.util.EnumMap;
 import java.util.List;
 
 public final class SystemScheduler {
-    private final EnumMap<UpdatePhase, List<UpdateSystem>> updateSystems = new EnumMap<>(UpdatePhase.class);
-    private final EnumMap<RenderPhase, List<RenderSystem>> renderSystems = new EnumMap<>(RenderPhase.class);
+    private final EnumMap<UpdatePhase, List<UpdateSystemNode>> updateSystems = new EnumMap<>(UpdatePhase.class);
+    private final EnumMap<RenderPhase, List<SystemNode>> renderSystems = new EnumMap<>(RenderPhase.class);
     private final World world;
 
     public SystemScheduler(World world) {
@@ -29,7 +29,15 @@ public final class SystemScheduler {
     }
 
     public void register(UpdateSystem system) {
-        updateSystems.get(system.phase()).add(system);
+        UpdateSystemNode node = new UpdateSystemNode(system);
+        UpdatePhase phase = (UpdatePhase) node.descriptor().phase();
+        updateSystems.get(phase).add(node);
+    }
+
+    public void register(RenderSystem system) {
+        SystemNode node = new SystemNode(system);
+        RenderPhase phase = (RenderPhase) node.descriptor().phase();
+        renderSystems.get(phase).add(node);
     }
 
     public void register(RenderSystem system) {
