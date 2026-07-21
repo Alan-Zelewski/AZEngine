@@ -1,6 +1,6 @@
 package pl.engine.az.system.phase;
 
-public enum UpdatePhase {
+public enum UpdatePhase implements SystemPhase{
     INPUT,
     MOVEMENT,
     PHYSICS_PRE,
