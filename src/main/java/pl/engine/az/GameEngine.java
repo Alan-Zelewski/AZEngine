@@ -1,8 +1,12 @@
 package pl.engine.az;
 
+import pl.engine.az.core.EngineContext;
+import pl.engine.az.core.ExecutionPlanner;
+import pl.engine.az.core.FrameExecutionPlan;
 import pl.engine.az.display.Display;
 import pl.engine.az.core.SystemScheduler;
 import pl.engine.az.input.InputManager;
+import pl.engine.az.scene.SceneManager;
 
 import java.awt.*;
 import java.util.concurrent.locks.LockSupport;
@@ -14,11 +18,23 @@ public class GameEngine implements Runnable {
     private final Display display;
     private final InputManager inputManager;
     private final SystemScheduler scheduler;
+    private final SceneManager sceneManager;
+    private final ExecutionPlanner planner;
+    private final EngineContext context;
+    // Zbuforowany plan klatki
+    private FrameExecutionPlan currentPlan;
 
-    public GameEngine(Display display, InputManager inputManager, SystemScheduler scheduler) {
+    public GameEngine(Display display, InputManager inputManager, SystemScheduler scheduler,
+            SceneManager sceneManager,
+            ExecutionPlanner planner,
+            EngineContext context
+    ) {
         this.display = display;
         this.inputManager = inputManager;
         this.scheduler = scheduler;
+        this.sceneManager = sceneManager;
+        this.planner = planner;
+        this.context = context;
     }
 
     public void start() {
@@ -33,6 +49,7 @@ public class GameEngine implements Runnable {
     public void run() {
         long lastTime = System.nanoTime();
         double accumulator = 0.0;
+        currentPlan = planner.buildPlan(sceneManager.getStack());
 
         while (running) {
             long frameStart = System.nanoTime();
@@ -54,14 +71,19 @@ public class GameEngine implements Runnable {
     }
 
     private void update(double deltaTime) {
+        sceneManager.flush();
+        if (sceneManager.isDirty()) {
+            currentPlan = planner.buildPlan(sceneManager.getStack());
+            sceneManager.clearDirty();
+        }
         inputManager.beginFrame();
-        scheduler.update(deltaTime);
+        scheduler.update(deltaTime, currentPlan, context);
     }
 
     private void render(double alpha) {
         Graphics g = display.beginFrame();
         try {
-            scheduler.render(g, alpha);
+            scheduler.render(g, alpha, currentPlan);
         } finally {
             g.dispose();
         }

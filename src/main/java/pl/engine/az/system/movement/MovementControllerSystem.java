@@ -1,5 +1,8 @@
 package pl.engine.az.system.movement;
 
+import pl.engine.az.core.SystemDescriptor;
+import pl.engine.az.core.SystemTag;
+import pl.engine.az.core.SystemTags;
 import pl.engine.az.ecs.ComponentMapper;
 import pl.engine.az.ecs.EntityCommandBuffer;
 import pl.engine.az.ecs.Query;
@@ -10,7 +13,13 @@ import pl.engine.az.ecs.component.PhysicsBodyComponent;
 import pl.engine.az.system.UpdateSystem;
 import pl.engine.az.system.phase.UpdatePhase;
 
+import java.util.EnumSet;
+
 public class MovementControllerSystem implements UpdateSystem {
+
+    private static final SystemDescriptor DESCRIPTOR = new SystemDescriptor("MovementController",
+            UpdatePhase.MOVEMENT,
+            EnumSet.of(SystemTag.GAMEPLAY));
 
     private final Query query;
     private final ComponentMapper<DesiredMovementComponent> desiredMapper;
@@ -29,8 +38,8 @@ public class MovementControllerSystem implements UpdateSystem {
     }
 
     @Override
-    public UpdatePhase phase() {
-        return UpdatePhase.MOVEMENT;
+    public SystemDescriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     @Override

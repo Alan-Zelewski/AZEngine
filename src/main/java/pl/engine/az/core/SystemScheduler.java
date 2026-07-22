@@ -14,12 +14,10 @@ import java.util.EnumMap;
 import java.util.List;
 
 public final class SystemScheduler {
-    private final EnumMap<UpdatePhase, List<UpdateSystem>> updateSystems = new EnumMap<>(UpdatePhase.class);
-    private final EnumMap<RenderPhase, List<RenderSystem>> renderSystems = new EnumMap<>(RenderPhase.class);
-    private final World world;
+    private final EnumMap<UpdatePhase, List<UpdateSystemNode>> updateSystems = new EnumMap<>(UpdatePhase.class);
+    private final EnumMap<RenderPhase, List<RenderSystemNode>> renderSystems = new EnumMap<>(RenderPhase.class);
 
-    public SystemScheduler(World world) {
-        this.world = world;
+    public SystemScheduler() {
         for (UpdatePhase phase : UpdatePhase.values()) {
             updateSystems.put(phase, new ArrayList<>());
         }
@@ -29,27 +27,44 @@ public final class SystemScheduler {
     }
 
     public void register(UpdateSystem system) {
-        updateSystems.get(system.phase()).add(system);
+        UpdateSystemNode node = new UpdateSystemNode(system);
+        UpdatePhase phase = (UpdatePhase) node.getDescriptor().phase();
+        updateSystems.get(phase).add(node);
     }
 
     public void register(RenderSystem system) {
-        renderSystems.get(system.phase()).add(system);
+        RenderSystemNode node = new RenderSystemNode(system);
+        RenderPhase phase = (RenderPhase) node.getDescriptor().phase();
+        renderSystems.get(phase).add(node);
     }
 
-    public void update(double dt) {
+    public void update(double dt, FrameExecutionPlan plan, EngineContext context) {
         for (UpdatePhase phase : UpdatePhase.values()) {
+            long activeMask = plan.getMask(phase);
+
+            if (activeMask == 0L) continue;
+
             EntityCommandBuffer phaseCommands = new DefaultEntityCommandBuffer();
-            for (UpdateSystem system : updateSystems.get(phase)) {
-                system.update(dt, phaseCommands);
+
+            for (UpdateSystemNode node : updateSystems.get(phase)) {
+                if (node.canRun(activeMask)) {
+                    node.getSystem().update(dt, phaseCommands);
+                }
             }
-            phaseCommands.playback(world);
+            phaseCommands.playback(context.getWorld());
         }
     }
 
-    public void render(Graphics g, double alpha) {
+    public void render(Graphics g, double alpha, FrameExecutionPlan plan) {
         for (RenderPhase phase : RenderPhase.values()) {
-            for (RenderSystem system : renderSystems.get(phase)) {
-                system.render(g, alpha);
+            long activeMask = plan.getMask(phase);
+
+            if (activeMask == 0L) continue;
+
+            for(RenderSystemNode node : renderSystems.get(phase)) {
+                if (node.canRun(activeMask)) {
+                    node.getSystem().render(g, alpha);
+                }
             }
         }
     }

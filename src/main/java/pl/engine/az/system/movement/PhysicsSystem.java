@@ -2,6 +2,8 @@ package pl.engine.az.system.movement;
 
 import org.dyn4j.geometry.Vector2;
 import pl.engine.az.core.EngineContext;
+import pl.engine.az.core.SystemDescriptor;
+import pl.engine.az.core.SystemTag;
 import pl.engine.az.ecs.ComponentMapper;
 import pl.engine.az.ecs.EntityCommandBuffer;
 import pl.engine.az.ecs.Query;
@@ -10,7 +12,14 @@ import pl.engine.az.ecs.component.PositionComponent;
 import pl.engine.az.system.UpdateSystem;
 import pl.engine.az.system.phase.UpdatePhase;
 
+import java.util.EnumSet;
+
 public class PhysicsSystem implements UpdateSystem {
+
+    private static final SystemDescriptor DESCRIPTOR = new SystemDescriptor("MovementController",
+            UpdatePhase.PHYSICS_STEP,
+            EnumSet.of(SystemTag.CORE));
+
     private final EngineContext context;
     private final Query query;
     private final ComponentMapper<PositionComponent> positions;
@@ -25,8 +34,8 @@ public class PhysicsSystem implements UpdateSystem {
     }
 
     @Override
-    public UpdatePhase phase() {
-        return UpdatePhase.PHYSICS_STEP;
+    public SystemDescriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     @Override
