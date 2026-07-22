@@ -5,6 +5,7 @@ import org.dyn4j.dynamics.BodyFixture;
 import org.dyn4j.geometry.Geometry;
 import org.dyn4j.geometry.MassType;
 import pl.engine.az.core.EngineContext;
+import pl.engine.az.core.ExecutionPlanner;
 import pl.engine.az.core.PhysicsWorld;
 import pl.engine.az.core.SystemScheduler;
 import pl.engine.az.display.Display;
@@ -16,8 +17,9 @@ import pl.engine.az.input.InputConfig;
 import pl.engine.az.input.InputConfigLoader;
 import pl.engine.az.input.InputManager;
 import pl.engine.az.input.KeyboardInput;
+import pl.engine.az.scene.GameplayScene;
+import pl.engine.az.scene.SceneManager;
 import pl.engine.az.system.input.PlayerInputSystem;
-import pl.engine.az.system.lifetime.LifetimeSystem;
 import pl.engine.az.system.movement.MovementControllerSystem;
 import pl.engine.az.system.movement.PhysicsSystem;
 import pl.engine.az.system.render.SquareRenderSystem;
@@ -37,6 +39,8 @@ public class GameBootstrap {
 
         PhysicsWorld physicsWorld = new PhysicsWorld();
         EngineContext context = new EngineContext(world, physicsWorld);
+        SceneManager sceneManager = new SceneManager(context);
+        ExecutionPlanner planner = new ExecutionPlanner();
         SystemScheduler scheduler = new SystemScheduler();
 
         List<Class<? extends Component>> components =
@@ -49,7 +53,6 @@ public class GameBootstrap {
         scheduler.register(new MovementControllerSystem(world));
         scheduler.register(new PhysicsSystem(context));
         scheduler.register(new SquareRenderSystem(world));
-        scheduler.register(new LifetimeSystem(world));
 
         // Tworzenie granic ekranu (Statyczne - INFINITE mass)
         createWall(physicsWorld, 400, -10, 800, 20); // Góra
@@ -63,7 +66,9 @@ public class GameBootstrap {
         // Tworzenie dynamicznego gracza
         createPlayer(world, context, 100, 100);
 
-        GameEngine engine = new GameEngine(display, inputManager, scheduler);
+        sceneManager.requestPush(new GameplayScene());
+
+        GameEngine engine = new GameEngine(display, inputManager, scheduler, sceneManager, planner, context);
 
         engine.start();
     }

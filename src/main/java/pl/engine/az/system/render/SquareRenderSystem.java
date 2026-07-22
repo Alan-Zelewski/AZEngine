@@ -1,9 +1,7 @@
 package pl.engine.az.system.render;
 
 import pl.engine.az.core.SystemDescriptor;
-import pl.engine.az.core.SystemScheduler;
 import pl.engine.az.core.SystemTag;
-import pl.engine.az.core.SystemTags;
 import pl.engine.az.ecs.ComponentMapper;
 import pl.engine.az.ecs.Query;
 import pl.engine.az.ecs.World;
@@ -16,7 +14,7 @@ import java.awt.*;
 import java.util.EnumSet;
 
 public class SquareRenderSystem implements RenderSystem {
-    public static final SystemDescriptor descriptor = new SystemDescriptor(
+    public static final SystemDescriptor DESCRIPTOR = new SystemDescriptor(
             "SquareRenderer",
             RenderPhase.WORLD,
             EnumSet.of(SystemTag.RENDER)
@@ -33,8 +31,8 @@ public class SquareRenderSystem implements RenderSystem {
     }
 
     @Override
-    public RenderPhase phase() {
-        return RenderPhase.WORLD;
+    public SystemDescriptor descriptor() {
+        return DESCRIPTOR;
     }
 
     @Override
