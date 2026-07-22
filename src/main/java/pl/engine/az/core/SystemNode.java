@@ -19,7 +19,7 @@ public abstract class SystemNode<T extends EngineSystem> {
         return (tagMask & activeMask) != 0;
     }
 
-    public final EngineSystem getSystem() {
+    public final T getSystem() {
         return system;
     }
 

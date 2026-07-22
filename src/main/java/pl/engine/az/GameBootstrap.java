@@ -37,7 +37,7 @@ public class GameBootstrap {
 
         PhysicsWorld physicsWorld = new PhysicsWorld();
         EngineContext context = new EngineContext(world, physicsWorld);
-        SystemScheduler scheduler = new SystemScheduler(world);
+        SystemScheduler scheduler = new SystemScheduler();
 
         List<Class<? extends Component>> components =
                 ComponentScanner.findComponents("pl.engine.az.ecs.component");
